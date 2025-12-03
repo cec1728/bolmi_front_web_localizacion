@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Bolmi Color System */
+  --bolmi-black: #020617;
+  --bolmi-secondary: #0f172a;
+  --bolmi-gold: #fbbf24;
+  --bolmi-text-light: #f1f5f9;
+  --bolmi-text-muted: #94a3b8;
+  --bolmi-green: #10b981;
+  --bolmi-yellow: #f59e0b;
+  --bolmi-red: #ef4444;
+
+  /* Semantic Design Tokens - Light Mode */
+  --background: oklch(0.98 0 0);
+  --foreground: var(--bolmi-black);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--bolmi-black);
+  --primary: var(--bolmi-gold);
+  --primary-foreground: var(--bolmi-black);
+  --secondary: var(--bolmi-secondary);
+  --secondary-foreground: var(--bolmi-text-light);
+  --muted: oklch(0.92 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: var(--bolmi-gold);
+  --accent-foreground: var(--bolmi-black);
+  --destructive: var(--bolmi-red);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: var(--bolmi-gold);
+  --chart-1: var(--bolmi-green);
+  --chart-2: var(--bolmi-yellow);
+  --chart-3: var(--bolmi-red);
+  --chart-4: #3b82f6;
+  --chart-5: #8b5cf6;
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Semantic Design Tokens - Dark Mode */
+  --background: var(--bolmi-black);
+  --foreground: var(--bolmi-text-light);
+  --card: var(--bolmi-secondary);
+  --card-foreground: var(--bolmi-text-light);
+  --primary: var(--bolmi-gold);
+  --primary-foreground: var(--bolmi-black);
+  --secondary: #1e293b;
+  --secondary-foreground: var(--bolmi-text-light);
+  --muted: #334155;
+  --muted-foreground: var(--bolmi-text-muted);
+  --accent: var(--bolmi-gold);
+  --accent-foreground: var(--bolmi-black);
+  --destructive: var(--bolmi-red);
+  --destructive-foreground: #fecaca;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: var(--bolmi-gold);
+  --chart-1: var(--bolmi-green);
+  --chart-2: var(--bolmi-yellow);
+  --chart-3: var(--bolmi-red);
+  --chart-4: #60a5fa;
+  --chart-5: #a78bfa;
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .card-hover {
+    @apply rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1 rounded-full bg-green-500/20 px-3 py-1 text-sm font-medium text-green-600 dark:text-green-400;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center gap-1 rounded-full bg-yellow-500/20 px-3 py-1 text-sm font-medium text-yellow-600 dark:text-yellow-400;
+  }
+
+  .badge-error {
+    @apply inline-flex items-center gap-1 rounded-full bg-red-500/20 px-3 py-1 text-sm font-medium text-red-600 dark:text-red-400;
+  }
+}
