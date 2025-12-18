@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css"
 import "./globals.css"
 
 import { AuthProvider } from "@/lib/context/auth-context"
+import { ThemeProvider } from "next-themes"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -53,8 +54,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`font-sans antialiased dark`}>
-        <AuthProvider>{children}</AuthProvider>
+      <body className={`font-sans antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
