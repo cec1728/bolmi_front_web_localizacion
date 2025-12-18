@@ -1,24 +1,41 @@
+// lib/api/auth.ts
 import { apiClient } from "./client"
-import { ENV } from "@/lib/env"
-import { TOKEN_KEY, USER_KEY } from "@/lib/env"
-import type { AuthUser, LoginPayload, LoginResponse, Usuario } from "@/lib/types"
+import { ENV, TOKEN_KEY, USER_KEY } from "@/lib/env"
+import type { AuthUser, LoginPayload, Usuario } from "@/lib/types"
 
 export const authService = {
-  async login(payload: LoginPayload): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>(`${ENV.AUTH_BASE_URL}/auth/login`, payload)
+  async login(payload: LoginPayload): Promise<AuthUser> {
+    // 1) Login: obtener token
+    const loginResp = await apiClient.post<{ access_token: string; token_type: string }>(
+      `${ENV.AUTH_BASE_URL}/auth/login`,
+      payload,
+    )
 
-    // Store token and user
-    localStorage.setItem(TOKEN_KEY, response.access_token)
-    localStorage.setItem(USER_KEY, JSON.stringify(response.user))
+    const token = loginResp.access_token
+    if (!token) {
+      throw new Error("No se recibió access_token desde el backend")
+    }
 
-    return response
+    // Guardar token
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, token)
+    }
+
+    // 2) Llamar a /auth/me con ese token (apiClient ya debería inyectarlo en headers)
+    const user = await this.getMe()
+
+    // Guardar user
+    if (typeof window !== "undefined") {
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
+    }
+
+    return user
   },
 
   async getMe(): Promise<AuthUser> {
     return apiClient.get<AuthUser>(`${ENV.AUTH_BASE_URL}/auth/me`)
   },
-
-  async registerConductor(data: {
+    async registerConductor(data: {
     username: string
     email: string
     password: string
@@ -41,8 +58,10 @@ export const authService = {
   },
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+    }
   },
 
   getStoredUser(): AuthUser | null {

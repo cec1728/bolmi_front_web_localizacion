@@ -1,9 +1,8 @@
 "use client"
 
 import type React from "react"
-
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { useAuth } from "@/lib/context/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -11,28 +10,34 @@ import { AlertCircle, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, loading: authLoading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    router.push("/dashboard")
-  }
+  useEffect(() => {
+    console.log("[LoginPage] isAuthenticated:", isAuthenticated, "authLoading:", authLoading)
+    if (!authLoading && isAuthenticated) {
+      console.log("[LoginPage] Usuario autenticado, navegando a /dashboard")
+      router.replace("/dashboard")
+    }
+  }, [isAuthenticated, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    console.log("[LoginPage] Intentando login con", email)
 
     try {
       await login(email, password)
-      router.push("/dashboard")
+      console.log("[LoginPage] login() resuelto sin error")
+      // NO hagas push aquí, el useEffect de arriba se encargará
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error en autenticación"
       setError(message)
+      console.error("[LoginPage] Error en login:", message)
     } finally {
       setLoading(false)
     }
@@ -57,14 +62,14 @@ export default function LoginPage() {
               {/* Error Alert */}
               {error && (
                 <div className="flex gap-3 rounded-lg bg-red-500/20 p-4">
-                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
                   <p className="text-sm text-red-400">{error}</p>
                 </div>
               )}
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-bolmi-text-light mb-2">
+                <label htmlFor="email" className="mb-2 block text-sm font-medium text-bolmi-text-light">
                   Correo Electrónico
                 </label>
                 <input
@@ -73,7 +78,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@bolmi.com"
-                  disabled={loading}
+                  disabled={loading || authLoading}
                   required
                   className="w-full rounded-lg border border-bolmi-black/20 bg-bolmi-black/30 px-4 py-2.5 text-bolmi-text-light placeholder-bolmi-text-muted transition focus:border-bolmi-gold focus:outline-none focus:ring-2 focus:ring-bolmi-gold/20 disabled:opacity-50"
                 />
@@ -81,7 +86,7 @@ export default function LoginPage() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-bolmi-text-light mb-2">
+                <label htmlFor="password" className="mb-2 block text-sm font-medium text-bolmi-text-light">
                   Contraseña
                 </label>
                 <input
@@ -90,7 +95,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  disabled={loading}
+                  disabled={loading || authLoading}
                   required
                   className="w-full rounded-lg border border-bolmi-black/20 bg-bolmi-black/30 px-4 py-2.5 text-bolmi-text-light placeholder-bolmi-text-muted transition focus:border-bolmi-gold focus:outline-none focus:ring-2 focus:ring-bolmi-gold/20 disabled:opacity-50"
                 />
@@ -99,10 +104,10 @@ export default function LoginPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={loading || !email || !password}
-                className="w-full bg-bolmi-gold text-bolmi-black hover:bg-bolmi-gold/90 font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
+                disabled={loading || authLoading || !email || !password}
+                className="w-full rounded-lg bg-bolmi-gold py-2.5 font-semibold text-bolmi-black transition hover:bg-bolmi-gold/90 disabled:opacity-50"
               >
-                {loading ? (
+                {loading || authLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Autenticando...

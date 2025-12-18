@@ -3,7 +3,10 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+// app/layout.tsx (o el layout raíz de Next)
+import "leaflet/dist/leaflet.css"
 import "./globals.css"
+
 import { AuthProvider } from "@/lib/context/auth-context"
 
 const _geist = Geist({ subsets: ["latin"] })

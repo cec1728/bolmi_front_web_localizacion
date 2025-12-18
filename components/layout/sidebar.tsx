@@ -4,7 +4,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/context/auth-context"
 import { UserRole } from "@/lib/types"
-import { LayoutDashboard, Users, Truck, MapPin, FileText, Building2, LogOut, Menu, X } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  Truck,
+  MapPin,
+  FileText,
+  Building2,
+  LogOut,
+  Menu,
+  X,
+  BarChart3,           // 👈 NUEVO
+} from "lucide-react"
 import { useState } from "react"
 
 const NAV_ITEMS = [
@@ -12,6 +23,12 @@ const NAV_ITEMS = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    roles: [UserRole.ADMIN_SINDICATO, UserRole.ADMIN_GLOBAL],
+  },
+  {
+    label: "Reportes",
+    href: "/dashboard/reportes",     // 👈 NUEVO
+    icon: BarChart3,
     roles: [UserRole.ADMIN_SINDICATO, UserRole.ADMIN_GLOBAL],
   },
   {

@@ -39,11 +39,19 @@ export default function UsuariosPage() {
   }, [user?.sindicato_id])
 
   const filteredUsuarios = usuarios.filter((u) => {
+    const search = searchTerm.toLowerCase().trim()
+
+    const fullNameFromPersona = `${
+      u.persona?.nombre ? u.persona.nombre : ""
+    } ${u.persona?.apellido ? u.persona.apellido : ""}`
+      .toLowerCase()
+      .trim()
+
     const matchesSearch =
-      u.persona?.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.persona?.apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.persona?.ci?.includes(searchTerm)
+      (fullNameFromPersona && fullNameFromPersona.includes(search)) ||
+      (u.username ?? "").toLowerCase().includes(search) ||
+      (u.email ?? "").toLowerCase().includes(search) ||
+      (u.persona?.ci ?? "").includes(search)
 
     const matchesRole = roleFilter ? u.rol_id === roleFilter : true
 
@@ -59,7 +67,9 @@ export default function UsuariosPage() {
             <Users className="h-8 w-8" />
             Gestión de Usuarios
           </h1>
-          <p className="text-muted-foreground mt-1">Crea y administra conductores y admins de sindicato</p>
+          <p className="text-muted-foreground mt-1">
+            Crea y administra conductores y admins de sindicato
+          </p>
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
@@ -118,28 +128,46 @@ export default function UsuariosPage() {
                   </td>
                 </tr>
               ) : (
-                filteredUsuarios.map((usuario) => (
-                  <tr key={usuario.id} className="border-b border-border hover:bg-secondary/50 transition">
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-foreground">
-                        {usuario.persona?.nombre} {usuario.persona?.apellido}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{usuario.email}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{usuario.persona?.ci || "-"}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400">
-                        {usuario.rol_id === UserRole.CONDUCTOR ? "Conductor" : "Admin"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Button onClick={() => setSelectedUser(usuario)} variant="outline" size="sm" className="gap-2">
-                        <Eye className="h-4 w-4" />
-                        Ver
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                filteredUsuarios.map((usuario) => {
+                  const fullNameFromPersona =
+                    (usuario.persona?.nombre || usuario.persona?.apellido)
+                      ? `${usuario.persona?.nombre ?? ""} ${usuario.persona?.apellido ?? ""}`.trim()
+                      : ""
+
+                  const displayName =
+                    fullNameFromPersona || usuario.username || usuario.email
+
+                  return (
+                    <tr
+                      key={usuario.id}
+                      className="border-b border-border hover:bg-secondary/50 transition"
+                    >
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-foreground">{displayName}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{usuario.email}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {usuario.persona?.ci || "-"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400">
+                          {usuario.rol_id === UserRole.CONDUCTOR ? "Conductor" : "Admin"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Button
+                          onClick={() => setSelectedUser(usuario)}
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Ver
+                        </Button>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
@@ -157,7 +185,9 @@ export default function UsuariosPage() {
         />
       )}
 
-      {selectedUser && <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
+      {selectedUser && (
+        <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
     </div>
   )
 }

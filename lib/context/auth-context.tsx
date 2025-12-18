@@ -1,3 +1,4 @@
+// lib/context/auth-context.tsx
 "use client"
 
 import type React from "react"
@@ -5,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { authService } from "@/lib/api/auth"
 import { UserRole } from "@/lib/types"
 import type { AuthUser } from "@/lib/types"
+import { USER_KEY } from "@/lib/env"
 
 interface AuthContextType {
   user: AuthUser | null
@@ -24,23 +26,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 🔹 Restaurar sesión al cargar la app
   useEffect(() => {
     const storedUser = authService.getStoredUser()
+    const token = authService.getStoredToken()
+
     if (storedUser) {
+      console.log("[AuthContext] Usuario restaurado desde localStorage:", storedUser.email)
       setUser(storedUser)
+      setLoading(false)
+      return
     }
-    setLoading(false)
+
+    if (token) {
+      console.log("[AuthContext] Hay token sin user → llamando /auth/me")
+      authService
+        .getMe()
+        .then((u) => {
+          console.log("[AuthContext] /auth/me OK para:", u.email)
+          setUser(u)
+          if (typeof window !== "undefined") {
+            localStorage.setItem(USER_KEY, JSON.stringify(u))
+          }
+        })
+        .catch((err) => {
+          console.warn("[AuthContext] /auth/me falló, limpiando sesión:", err)
+          authService.logout()
+          setUser(null)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
   }, [])
 
+  // 🔹 LOGIN: ahora authService.login devuelve directamente AuthUser
   const login = async (email: string, password: string) => {
     try {
       setError(null)
-      const response = await authService.login({ email, password })
-      setUser(response.user)
+      setLoading(true)
+      console.log("[AuthContext] login() intentando con:", email)
+
+      const user = await authService.login({ email, password })
+      console.log("[AuthContext] login() OK, usuario:", user.email)
+
+      setUser(user)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error en login"
+      console.error("[AuthContext] login() ERROR:", message)
       setError(message)
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -56,15 +93,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const canManageSindicato = (sindicatoId?: number): boolean => {
     if (!user) return false
-
-    // Admin global can manage any sindicato
     if (user.rol_id === UserRole.ADMIN_GLOBAL) return true
-
-    // Admin sindicato can only manage their own
     if (user.rol_id === UserRole.ADMIN_SINDICATO) {
       return !sindicatoId || user.sindicato_id === sindicatoId
     }
-
     return false
   }
 

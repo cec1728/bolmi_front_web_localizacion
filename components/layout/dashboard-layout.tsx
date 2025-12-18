@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/context/auth-context"
 import type { UserRole } from "@/lib/types"
@@ -17,27 +17,36 @@ export function DashboardLayout({ children, requiredRoles }: DashboardLayoutProp
   const router = useRouter()
   const { user, loading, isAuthenticated } = useAuth()
 
+  // 🔐 Redirección a /login solo en un efecto
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace("/login")
+    }
+  }, [loading, isAuthenticated, router])
+
+  // Mientras se carga el estado de auth
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
     )
   }
 
+  // Aquí ya se disparó el useEffect si no está autenticado
   if (!isAuthenticated) {
-    router.push("/login")
     return null
   }
 
+  // 🔒 Check de roles (esto no navega, solo muestra mensaje, así que está ok)
   if (requiredRoles && !requiredRoles.includes(user?.rol_id as UserRole)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">No Autorizado</h1>
+          <h1 className="mb-2 text-2xl font-bold text-foreground">No Autorizado</h1>
           <p className="text-muted-foreground">No tienes permiso para acceder a esta página</p>
         </div>
       </div>
